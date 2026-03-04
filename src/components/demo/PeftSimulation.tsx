@@ -66,7 +66,7 @@ export default function PeftSimulation() {
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          className="w-full bg-surface border border-border rounded-lg px-4 py-2 text-sm text-foreground focus:outline-none focus:border-neon-cyan/50 transition-colors"
+          className="w-full bg-surface border border-border rounded-lg px-4 py-2 text-sm text-foreground focus:outline-none focus:border-neon-cyan/50 focus:shadow-[0_0_0_1px_rgba(0,255,255,0.15)] transition-all duration-200"
         />
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="text-xs font-mono text-muted mr-2">Tokens:</span>

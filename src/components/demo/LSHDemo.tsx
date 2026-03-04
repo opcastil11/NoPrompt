@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { lshHash, lshCompare, type LSHResult } from '@/lib/crypto-utils';
+import { lshCompare, type LSHResult } from '@/lib/crypto-utils';
+import CopyButton from '@/components/ui/CopyButton';
 
 const EXAMPLE_PAIRS = [
   { a: 'Explain quantum computing', b: 'Describe quantum computation' },
@@ -28,6 +29,9 @@ export default function LSHDemo() {
   const simColor = (v: number) =>
     v >= 0.8 ? 'text-green-400' : v >= 0.5 ? 'text-yellow-400' : 'text-red-400';
 
+  const simBarColor = (v: number) =>
+    v >= 0.8 ? 'bg-green-400' : v >= 0.5 ? 'bg-yellow-400' : 'bg-red-400';
+
   return (
     <div className="space-y-6">
       <div className="bg-neon-cyan/5 border border-neon-cyan/20 rounded-lg px-4 py-3">
@@ -43,7 +47,7 @@ export default function LSHDemo() {
             value={textA}
             onChange={(e) => setTextA(e.target.value)}
             rows={2}
-            className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:outline-none focus:border-neon-cyan/50 resize-none transition-colors"
+            className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:outline-none focus:border-neon-cyan/50 focus:shadow-[0_0_0_1px_rgba(0,255,255,0.15)] resize-none transition-all duration-200"
           />
         </div>
         <div>
@@ -52,7 +56,7 @@ export default function LSHDemo() {
             value={textB}
             onChange={(e) => setTextB(e.target.value)}
             rows={2}
-            className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:outline-none focus:border-neon-cyan/50 resize-none transition-colors"
+            className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-foreground focus:outline-none focus:border-neon-cyan/50 focus:shadow-[0_0_0_1px_rgba(0,255,255,0.15)] resize-none transition-all duration-200"
           />
         </div>
       </div>
@@ -64,9 +68,9 @@ export default function LSHDemo() {
           <button
             key={idx}
             onClick={() => { setTextA(pair.a); setTextB(pair.b); setResult(null); }}
-            className="text-xs px-3 py-1.5 bg-surface-2 border border-border rounded-full text-muted hover:text-foreground hover:border-neon-cyan/30 transition-colors cursor-pointer"
+            className="text-xs px-3 py-1.5 bg-surface-2 border border-border rounded-full text-muted hover:text-foreground hover:border-neon-cyan/30 hover:bg-neon-cyan/5 transition-all duration-200 cursor-pointer active:scale-[0.97]"
           >
-            &quot;{pair.a.slice(0, 25)}...&quot; vs &quot;{pair.b.slice(0, 25)}...&quot;
+            &quot;{pair.a.slice(0, 20)}...&quot; vs &quot;{pair.b.slice(0, 20)}...&quot;
           </button>
         ))}
       </div>
@@ -74,7 +78,7 @@ export default function LSHDemo() {
       <button
         onClick={runCompare}
         disabled={!textA.trim() || !textB.trim()}
-        className="px-6 py-2.5 bg-neon-cyan/10 border border-neon-cyan/50 text-neon-cyan rounded-lg text-sm font-medium hover:bg-neon-cyan/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+        className="px-6 py-2.5 bg-neon-cyan/10 border border-neon-cyan/50 text-neon-cyan rounded-lg text-sm font-medium hover:bg-neon-cyan/20 hover:shadow-[0_0_16px_rgba(0,255,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer active:scale-[0.98]"
       >
         Compare LSH Hashes
       </button>
@@ -83,53 +87,40 @@ export default function LSHDemo() {
         <div className="space-y-4 animate-fade-in">
           {/* Binary hashes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-surface border border-border rounded-lg p-4">
-              <h4 className="text-xs font-mono text-muted mb-1 uppercase tracking-wider">Hash A</h4>
-              <div className="flex gap-0.5 mb-2 flex-wrap">
-                {result.hashA.binaryHash.split('').map((bit, i) => (
-                  <span
-                    key={i}
-                    className={`w-5 h-6 flex items-center justify-center text-xs font-mono rounded ${
-                      bit === result.hashB.binaryHash[i]
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-red-500/20 text-red-400'
-                    }`}
-                  >
-                    {bit}
-                  </span>
-                ))}
+            {[
+              { label: 'Hash A', hash: result.hashA, other: result.hashB },
+              { label: 'Hash B', hash: result.hashB, other: result.hashA },
+            ].map(({ label, hash, other }) => (
+              <div key={label} className="bg-surface border border-border rounded-lg p-4 transition-all duration-200 hover:border-neon-cyan/20">
+                <h4 className="text-xs font-mono text-muted mb-1 uppercase tracking-wider">{label}</h4>
+                <div className="flex gap-0.5 mb-2 flex-wrap">
+                  {hash.binaryHash.split('').map((bit, i) => (
+                    <span
+                      key={i}
+                      className={`w-5 h-6 flex items-center justify-center text-xs font-mono rounded transition-colors duration-150 ${
+                        bit === other.binaryHash[i]
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-red-500/20 text-red-400'
+                      }`}
+                    >
+                      {bit}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted">
+                    Hex: <span className="text-neon-cyan font-mono">0x{hash.hexHash}</span>
+                    {' '}(bucket {hash.bucketId})
+                  </p>
+                  <CopyButton text={`0x${hash.hexHash}`} />
+                </div>
               </div>
-              <p className="text-xs text-muted">
-                Hex: <span className="text-neon-cyan font-mono">0x{result.hashA.hexHash}</span>
-                {' '}(bucket {result.hashA.bucketId})
-              </p>
-            </div>
-            <div className="bg-surface border border-border rounded-lg p-4">
-              <h4 className="text-xs font-mono text-muted mb-1 uppercase tracking-wider">Hash B</h4>
-              <div className="flex gap-0.5 mb-2 flex-wrap">
-                {result.hashB.binaryHash.split('').map((bit, i) => (
-                  <span
-                    key={i}
-                    className={`w-5 h-6 flex items-center justify-center text-xs font-mono rounded ${
-                      bit === result.hashA.binaryHash[i]
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-red-500/20 text-red-400'
-                    }`}
-                  >
-                    {bit}
-                  </span>
-                ))}
-              </div>
-              <p className="text-xs text-muted">
-                Hex: <span className="text-neon-cyan font-mono">0x{result.hashB.hexHash}</span>
-                {' '}(bucket {result.hashB.bucketId})
-              </p>
-            </div>
+            ))}
           </div>
 
           {/* Metrics */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-surface-1 border border-border rounded-lg p-4 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-surface-1 border border-border rounded-lg p-4 text-center transition-all duration-200 hover:border-border/80">
               <p className="text-xs text-muted mb-1">Hamming Distance</p>
               <p className={`text-2xl font-mono font-bold ${
                 result.hammingDistance <= 3 ? 'text-green-400' :
@@ -139,36 +130,23 @@ export default function LSHDemo() {
               </p>
               <p className="text-xs text-muted mt-1">of 16 bits differ</p>
             </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-4 text-center">
-              <p className="text-xs text-muted mb-1">Hash Similarity</p>
-              <p className={`text-2xl font-mono font-bold ${simColor(result.hashSimilarity)}`}>
-                {Math.round(result.hashSimilarity * 100)}%
-              </p>
-              <div className="mt-2 h-1.5 bg-surface-2 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    result.hashSimilarity >= 0.8 ? 'bg-green-400' :
-                    result.hashSimilarity >= 0.5 ? 'bg-yellow-400' : 'bg-red-400'
-                  }`}
-                  style={{ width: `${result.hashSimilarity * 100}%` }}
-                />
+            {[
+              { label: 'Hash Similarity', value: result.hashSimilarity },
+              { label: 'Vector Cosine Sim', value: result.vectorSimilarity },
+            ].map((metric) => (
+              <div key={metric.label} className="bg-surface-1 border border-border rounded-lg p-4 text-center transition-all duration-200 hover:border-border/80">
+                <p className="text-xs text-muted mb-1">{metric.label}</p>
+                <p className={`text-2xl font-mono font-bold ${simColor(metric.value)}`}>
+                  {Math.round(metric.value * 100)}%
+                </p>
+                <div className="mt-2 h-1.5 bg-surface-2 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${simBarColor(metric.value)}`}
+                    style={{ width: `${Math.max(0, metric.value) * 100}%` }}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-4 text-center">
-              <p className="text-xs text-muted mb-1">Vector Cosine Sim</p>
-              <p className={`text-2xl font-mono font-bold ${simColor(result.vectorSimilarity)}`}>
-                {Math.round(result.vectorSimilarity * 100)}%
-              </p>
-              <div className="mt-2 h-1.5 bg-surface-2 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    result.vectorSimilarity >= 0.8 ? 'bg-green-400' :
-                    result.vectorSimilarity >= 0.5 ? 'bg-yellow-400' : 'bg-red-400'
-                  }`}
-                  style={{ width: `${Math.max(0, result.vectorSimilarity) * 100}%` }}
-                />
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Explanation */}
