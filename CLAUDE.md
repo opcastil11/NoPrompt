@@ -62,6 +62,24 @@ npm run build       # Production build
 npm run lint        # ESLint
 ```
 
+## Exposing Locally via Cloudflare Tunnel
+No account needed. Creates a temporary public HTTPS URL tunneling to localhost.
+
+```bash
+# 1. Download cloudflared (one-time)
+curl -L --output /tmp/cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+chmod +x /tmp/cloudflared
+
+# 2. Start the dev server
+nvm use 22
+npm run dev    # runs on localhost:3000
+
+# 3. In another terminal, start the tunnel
+/tmp/cloudflared tunnel --url http://localhost:3000
+```
+
+Cloudflared will print a public URL like `https://random-words.trycloudflare.com`. Share that URL — it works as long as both the dev server and the tunnel are running. Kill either to stop exposing.
+
 ## GitHub
 - Repo: https://github.com/opcastil11/NoPrompt
 - Branch: `main`
